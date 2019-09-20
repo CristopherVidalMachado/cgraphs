@@ -1,104 +1,147 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <ncurses.h>
 #include "Grafo.c"
+
 
 int main()
 {
     char option;
-    int num_vertices, grau_max, ponderado, origem, destino, digrafo;
+    int num_vertices, grau_max, ponderado, origem, destino,  digrafo;
     float peso;
 
-    clearScreen();
-    printf("Insira o numero de vertices:\n");
-    scanf("%d", &num_vertices);
-    printf("Insira o grau maximo do grafo:\n");
-    scanf("%d", &grau_max);
-    printf("Grafo ponderado? (0: nao | 1: sim)\n");
-    scanf("%d", &ponderado);
-    printf("Grafo digrafo? (0: nao | 1: sim)\n");
-    scanf("%d", &digrafo);
+    // clearScreen();
+    initscr();
+   
+	
+	cbreak();	/* Line buffering disabled. pass on everything */
+    printw("Insira as informações do mapa para começar:\n");
+    
+    printw("Insira o numero de localidades: (Onde o tamanho  real será N-1) : ");
+    refresh();
+    scanw("%d", &num_vertices);
+    printw("Insira o numero máximo de entradas e saidas das localidades: ");
+    scanw("%d", &grau_max);
+    printw("O mapa possui distancia entre os locais? (0: nao | 1: sim) (Qualquer valor diferente será considerado = 0 ): ");
+    scanw("%d", &ponderado);
+    if(ponderado != 1  && ponderado!= 0 ){
+        ponderado = 0;
+    }
+    printw("Os caminhos são unidirecionais? (0: nao | 1: sim) (Qualquer valor diferente será considerado = 0): ");
+    scanw("%d", &digrafo);
+    if(digrafo != 1  && digrafo!= 0 ){
+        digrafo = 0;
+    }
+
 
     Grafo *gr = criaGrafo(num_vertices, grau_max, ponderado, digrafo);
     int vis[num_vertices], anterior[num_vertices];
     float distancia[num_vertices];
-
+    clear();
     do
     {
-        clearScreen();
-        printf("1: Inserir aresta.\n");
-        printf("2: Remover aresta.\n");
-        printf("3: Imprimir grafo.\n");
-        printf("4: Busca em profundidade.\n");
-        printf("5. Busca em largura.\n");
-        printf("6. Dijkstra.\n");
-        printf("7. Arvore expandida minima.\n");
-        printf("8. Kruskal.\n");
-        printf("9. Prim.\n");
-        printf("0: Liberar grafo.\n");
-        clean_stdin();
-        option = getchar();
-        clearScreen();
+        // clearScreen();
+        printw("1: Inserir localidade.\n");
+        printw("2: Remover localidade.\n");
+        printw("3: Imprimir mapa.\n");
+        printw("4: Busca em profundidade.\n");
+        printw("5. Busca em largura.\n");
+        printw("6. Dijkstra.\n");
+        printw("7. Arvore expandida minima.\n");
+        printw("8. Kruskal.\n");
+        printw("9. Prim.\n");
+        printw("0: Liberar mapa.\n");
+        refresh();
+        option = getch();
+        // clearScreen();
 
         if (option == '1')
         {
-            printf("Qual o vertice de origem?\n");
-            scanf("%d", &origem);
-            printf("Qual o vertice de destino?\n");
-            scanf("%d", &destino);
+            clear();
+            printw("Qual a localidade de origem?\n");
+            scanw("%d", &origem);
+            printw("Qual o localidade de destino?\n");
+            scanw("%d", &destino);
             if (ponderado == 1)
             {
-                printf("Qual o peso da aresta?\n");
-                scanf("%f", &peso);
+                printw("Qual a distancia para o destino?\n");
+                scanw("%f", &peso);
             }
 
             insereAresta(gr, origem, destino, digrafo, peso);
+            clear();
         }
         else if (option == '2')
         {
-            printf("Qual o vertice de origem?\n");
-            scanf("%d", &origem);
-            printf("Qual o vertice de destino?\n");
-            scanf("%d", &destino);
+            clear();
+            printw("Qual a localidade de origem?\n");
+            scanw("%d", &origem);
+            printw("Qual o localidade de destino?\n");
+            scanw("%d", &destino);
 
             removeAresta(gr, origem, destino, digrafo);
+            clear();
         }
         else if (option == '3')
         {
-            printf("Estrutura do grafo:\n\n");
+            clear();
+            printw("Estrutura do mapa:\n\n");
             imprimeGrafo(gr);
-            clean_stdin();
-            getchar();
+            refresh();
+            getch();
+            clear();
+
         }
         else if (option == '4')
         {
-            printf("Busca em profundidade:\n\n");
+            clear();
+            printw("Busca em profundidade:\n\n");
             buscaProfundidade(gr, 0, vis);
-            clean_stdin();
-            getchar();
+            refresh();
+            getch();
+            clear();
+
         }
         else if (option == '5')
         {
-            printf("Busca em largura:\n\n");
+            clear();
+            printw("Busca em largura:\n\n");
             buscaLargura(gr, 0, vis);
-            clean_stdin();
-            getchar();
+            refresh();
+            getch();
+            clear();
+
         }
         else if (option == '6')
         {
-            printf("Busca pelo menor caminho (algoritmo de Dijkstra):\n\n");
-            menorCaminho(gr, 0, anterior, distancia);
-            clean_stdin();
-            getchar();
+            clear();
+            printw("Busca pelo menor caminho (algoritmo de Dijkstra):\n\n");
+            int i,ant[5];
+            float dist[5];
+            
+
+            menorCaminho_Grafo(gr, 0, ant, dist);
+            for(i=0; i<num_vertices; i++)
+                printw("%d: %d -> %.2f\n",i,ant[i],dist[i]);
+            refresh();
+            getch();
+            clear();
+
         }
+
         else if (option == '0')
         {
+            clear();
             liberaGrafo(gr);
-            printf("Grafo liberado");
-            clean_stdin();
-            getchar();
+            printw("Mapa liberado");
+            refresh();
+            getch();
+            clear();
+
         }
 
     } while (option != '0');
-    
+    refresh();
+	endwin();
     return 0;
 }

@@ -112,15 +112,15 @@ void imprimeGrafo(Grafo *gr)
     int i, j;
     for (i = 0; i < gr->num_vertices; i++)
     {
-        printf("%d: ", i);
+        printw("%d: ", i);
         for (j = 0; j < gr->grau[i]; j++)
         {
             if (gr->ponderado)
-                printf("%d(%.2f), ", gr->arestas[i][j], gr->pesos[i][j]);
+                printw("%d(%.2f), ", gr->arestas[i][j], gr->pesos[i][j]);
             else
-                printf("%d, ", gr->arestas[i][j]);
+                printw("%d, ", gr->arestas[i][j]);
         }
-        printf("\n");
+        printw("\n");
     }
 }
 
@@ -143,7 +143,7 @@ void buscaProfundidade(Grafo *gr, int ini, int *visitado)
     buscaProfundidadeAux(gr, ini, visitado, cont);
 
     for (i = 0; i < gr->num_vertices; i++)
-        printf("%d -> %d\n", i, visitado[i]);
+        printw("Vertice [%d] -> %d nível\n", i, visitado[i]);
 }
 
 void buscaLargura(Grafo *gr, int ini, int *visitado)
@@ -175,7 +175,7 @@ void buscaLargura(Grafo *gr, int ini, int *visitado)
     }
     free(fila);
     for (i = 0; i < gr->num_vertices; i++)
-        printf("%d -> %d\n", i, visitado[i]);
+        printw("%d -> %d\n", i, visitado[i]);
 }
 
 int menorCaminhoAux(float *distancia, int *visitado, int NV)
@@ -197,59 +197,86 @@ int menorCaminhoAux(float *distancia, int *visitado, int NV)
             }
         }
     }
-    printf("menor: %d\n", menor);
+    printw("menor: %d\n", menor);
     return menor;
 }
 
-void menorCaminho(Grafo *gr, int inicial, int *anterior, float *distancia)
-{
+// Retorna o vértice de menor distância e que não foi visitado ainda.
+int procuraMenorDistancia(float *dist, int *visitado, int NV){
+    int i, menor = -1, primeiro = 1;
+    for(i=0; i < NV; i++){
+        //Procura vértice com menor distância e que não tenha sido visitado.
+		// Inicialmente todos os vértices não foram visitados e tem a distância -1;
+		if(dist[i] >= 0 && visitado[i] == 0){
+            if(primeiro){
+                menor = i;
+                primeiro = 0;
+            }else{
+                if(dist[menor] > dist[i])
+                    menor = i;
+            }
+        }
+    }
+    return menor;
+}
+
+void menorCaminho_Grafo(Grafo *gr, int ini, int *ant, float *dist){
     int i, cont, NV, ind, *visitado, vert;
+	
+	//Esse contador é utilizado para controlar que visitou todos os nós.
     cont = NV = gr->num_vertices;
-    visitado = (int *)malloc(NV * sizeof(int));
-    for (i = 0; i < NV; i++)
-    {
-        anterior[i] = -1;
-        distancia[i] = -1;
+    
+    refresh();
+	// Cria vetor auxiliar. Inicializa distâncias e anteriores.
+    visitado = (int*) malloc(NV * sizeof(int));
+    for(i=0; i < NV; i++){
+        ant[i] = -1;
+        dist[i] = -1;
         visitado[i] = 0;
     }
-    distancia[inicial] = 0;
-    while (cont > 0)
-    {
-        vert = menorCaminhoAux(distancia, visitado, NV);
-        if (vert == -1)
+	
+
+        refresh();
+	
+    dist[ini] = 0;
+    while(cont > 0){
+		//Procura vértice com menor distância e marca como visitado.
+        vert = procuraMenorDistancia(dist, visitado, NV);
+        //printf("u = %d\n",u);
+        if(vert == -1)
             break;
 
         visitado[vert] = 1;
         cont--;
-        for (i = 0; i < gr->grau[vert]; i++)
-        {
+		
+		//Para cada vértice vizinho, atualize as distÂncias dos vizinhos.
+        for(i=0; i<gr->grau[vert]; i++){
             ind = gr->arestas[vert][i];
-            if (distancia[ind] < 0)
-            {
-                distancia[ind] = distancia[vert] + 1; //ou peso da aresta
-                printf("\n%.2f\n", gr->pesos[0][0]);
-                anterior[ind] = vert;
-            }
-            else
-            {
-                if (distancia[ind] > distancia[vert] + 1)
-                {
-                    distancia[ind] = distancia[vert] + 1; //ou peso da aresta
-                    anterior[ind] = vert;
+            if(dist[ind] < 0){
+			   //Ou peso da aresta
+               dist[ind] = dist[vert] + gr->pesos[vert][i];
+            //    dist[ind] = dist[vert] + 1;
+               ant[ind] = vert;
+            }else{
+				//Se ele já tiver um valor de distÂncia válida...
+                if(dist[ind] > dist[vert] + 1){
+					//Significa que existe um caminho para vert com a distância menor
+                    // dist[ind] = dist[vert] + 1;
+					//ou peso da aresta
+                    dist[ind] = dist[vert] + gr->pesos[vert][i];
+					ant[ind] = vert;
                 }
             }
         }
     }
 
     free(visitado);
-    for (int i = 0; i < gr->num_vertices; i++)
-        printf("%d: %d -> %f\n", i, anterior[i], distancia[i]);
 }
 
 void clearScreen()
 {
     system("clear");
-    //printf("\e[H\e[2J");
+    //printw("\e[H\e[2J");
 }
 
 void clean_stdin(void)
