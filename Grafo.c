@@ -286,3 +286,86 @@ void clean_stdin(void)
         c = getchar();
     } while (c != '\n' && c != EOF);
 }
+
+void algPRIM(Grafo *gr, int orig, int *pai){ //1 arvore ao lomgo do processo O(v^3)
+    int i, j, dest, primeiro, NV = gr->num_vertices;
+    double menorPeso;
+    for (i = 0; i < NV; i++) //todos sos vertices sao sem pai
+        pai[i] = -1;
+    pai[orig] = orig; //o pai da origem eh ele mesmo
+    while(1){ //pocesso ate quando puder
+        primeiro = 1; //controlar caso encontro arestas com msm peso
+        for (i = 0; i < NV; i++){ //percorre todos os vertices
+            if (pai[i] != -1){  //achou vertices ja visitado
+                for (j = 0; j < gr->grau[i]; j++) { //percorre os vizinhos do vertices visitados
+                    //procurar  menor peso
+                    if (pai[gr->arestas[i][j]] == -1){ //achou vertice vizinho nao visitado, indices de outro vertices (colocar cara na arvore)
+                        if (primeiro){ //procuro aresta de menor custo
+                            menorPeso = gr->pesos[i][j]; //por ser o primeiro, ele recebe direto
+                            orig = i;
+                            dest = gr->arestas[i][j];
+                            primeiro = 0; //ja encontrei o vertice, logo encontrei ele
+                        }else{ //encontro outro que nao eh o primeiro
+                            if (menorPeso > gr->pesos[i][j]){ //se essa aresta for menor, efetuo a troca
+                                menorPeso = gr->pesos[i][j];
+                                orig = i;
+                                dest = gr->arestas[i][j];
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        if (primeiro == 1) //nao consigo encontrar mais ninguem
+            break;
+
+        pai[dest] = orig; //o cara do menor peso pasa a ser orig, pq ja encontrei ele
+    }
+}
+
+void algKruskal(Grafo *gr, int orig, int *pai){
+    int i, j, dest, primeiro, NV = gr->num_vertices;
+    double menorPeso;
+    int *arv = (int*) malloc(NV * sizeof(int)); //cria vetor auxiliar com mesmo numero de vertices
+    for (i = 0; i < NV; i++){
+        arv[i] = i; //arv de i recebe o indices, identificador (as arvores)
+        pai[i] = -1; //sem pai
+    }
+    pai[orig] = orig; //o pai da origem eh ele mesmo
+    while(1){ //pocesso ate quando puder
+        primeiro = 1; //controlar caso encontro arestas com msm peso
+        for (i = 0; i < NV; i++){ //percorre os vertices
+            for (j = 0; j < gr->grau[i]; j++) { //arestas do vertices i
+                //procura vertice menor peso (aresta menor custo)
+                if (arv[i] != arv[gr->arestas[i][j]]){ //verifica se as arvores sao diferentes, se forem, conecto na mesma arvore
+                    if (primeiro){ //ja tentei conectar alguem antes? se nao:
+                        menorPeso = gr->pesos[i][j]; //por ser o primeiro, ele recebe direto
+                        orig = i;
+                        dest = gr->arestas[i][j];
+                        primeiro = 0; //ja encontrei o vertice, logo encontrei ele
+                    }else{ //encontro outro que nao eh o primeiro
+                        if (menorPeso > gr->pesos[i][j]){ //se essa aresta for menor, efetuo a troca
+                            menorPeso = gr->pesos[i][j];
+                            orig = i;
+                            dest = gr->arestas[i][j];
+                        }
+                    }
+                }
+            }
+        }
+
+        if (primeiro == 1) //se nao encontrei ninguem
+            break;
+
+        //ajuste, tratamento pra saber quem vai ser pai de quem
+        if(pai[orig] == -1)
+            pai[orig] = dest;
+        else
+            pai[dest] = orig;
+
+        for (i = 0; i < NV; i++) //processo pra todos fazerem parte da mesma arvore
+            if (arv[i] == arv[dest]) //para cada arvore i, se ela fizer parte da dest, ela vai passar a fazer parte da orig
+                arv[i] = arv[orig]; //conecta as arvores para o mesmo identificador
+    }
+    free(arv);
+}
