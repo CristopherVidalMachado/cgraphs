@@ -47,7 +47,6 @@ int main()
         printw("4: Busca em profundidade.\n");
         printw("5. Busca em largura.\n");
         printw("6. Dijkstra.\n");
-        printw("7. Arvore expandida minima.\n");
         printw("8. Kruskal.\n");
         printw("9. Prim.\n");
         printw("0: Liberar mapa.\n");
@@ -128,7 +127,33 @@ int main()
             clear();
 
         }
+            else if (option == '8')
+        {
+            clear();
+            printw("\n\nAlgoritmo de Kruskal:\n");
+             int pai1[num_vertices], pai2[num_vertices];
+             int i;
+            algKruskal(gr, 0, pai2);
+            for(i = 0; i < num_vertices; i++)
+                printw("%d: %d\n", pai2[i], i);
 
+             getch();
+             clear();
+        }
+        else if (option == '9')
+        {
+            clear();
+            int i;
+   
+            int pai1[num_vertices], pai2[num_vertices];
+            printf("\n\nAlgoritmo de PRIM:\n");
+            algPRIM(gr, 0, pai1);
+            for(i = 0; i <num_vertices ; i++)
+                printw("%d: %d\n", pai1[i], i);
+
+             getch();
+             clear();
+        }
         else if (option == '0')
         {
             clear();
